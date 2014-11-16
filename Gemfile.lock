@@ -60,6 +60,7 @@ GEM
     pg (0.17.1)
     stringex (1.5.1)
     uuidtools (2.1.5)
+    wisper (1.6.0)
 
 PLATFORMS
   ruby
@@ -68,3 +69,4 @@ DEPENDENCIES
   data_mapper
   dm-postgres-adapter
   pg
+  wisper

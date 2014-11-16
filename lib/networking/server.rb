@@ -1,10 +1,13 @@
 require 'socket'
 require 'thread'
 require_relative 'player_client'
+require_relative 'chat'
 
 PORT = 2000
 
 class Server
+
+  attr_reader :players
 
   def self.run_server
     new.run_server
@@ -12,8 +15,8 @@ class Server
 
   def initialize
     @server = TCPServer.open(PORT)
+    @chat = Chat.new(self)
     @players = []
-    @chat_log = []
   end
 
   def run_server
@@ -35,8 +38,7 @@ class Server
 
   def say(player_name:, input:)
     say_string = "#{player_name} says: #{input}"
-    add_to_chat_log(say_string)
-    @players.each { |player| print_chat(player) }
+    @chat.new_message(say_string)
   end
 
   private
@@ -45,31 +47,9 @@ class Server
     @players.map { |player| player.name }.join(", ")
   end
 
-  # FIXME Save off @chat_log to prevent overflow
-  def add_to_chat_log(string)
-    @chat_log << string
-  end
-
-  def print_chat(player)
-    player.client.printf "\u001B[2J"
-    last_five_chat_lines.each do |chat_line|
-      player.client.puts chat_line
-    end
-  end
-
-  def last_five_chat_lines
-    if @chat_log.length <= 5
-      @chat_log
-    else
-      @chat_log[-5..-1]
-    end
-  end
-
   def logout(player)
     player.client.puts "CLOSING NOW K BAI"
     player.client.close
     @players.delete(player)
   end
 end
-
-Server.run_server
