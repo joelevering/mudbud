@@ -6,3 +6,5 @@ gem 'dm-postgres-adapter'
 gem 'data_mapper'
 
 gem 'wisper'
+
+gem 'pry'

@@ -7,7 +7,8 @@ class Chat
     @log = []
   end
 
-  def new_message(message)
+  def new_message(player_name:, message:)
+    message = "#{player_name}: #{message}"
     log_message(message)
     update_players
   end
