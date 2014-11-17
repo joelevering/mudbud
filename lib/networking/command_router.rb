@@ -1,4 +1,5 @@
 require_relative 'chat'
+require_relative 'message'
 
 class CommandRouter
 
@@ -8,9 +9,9 @@ class CommandRouter
     :say
   ]
 
-  def initialize(server)
+  def initialize(server:, chat:)
     @server = server
-    @chat = Chat.new(server)
+    @chat = chat
   end
 
   def route_command(command:)
@@ -28,7 +29,8 @@ class CommandRouter
   alias_method :exit, :quit
 
   def say(command)
-    @chat.new_message(player_name: command.player.name, message: command.message)
+    chat_message = Message.new(author: command.player, body: command.message_string)
+    @chat.new_message(chat_message)
   end
 
   private
@@ -38,6 +40,6 @@ class CommandRouter
   end
 
   def command_not_found(command)
-    @server.command_not_found(command)
+    command.player.command_not_found(command)
   end
 end

@@ -1,38 +1,28 @@
-# FIXME make messages their own class for DB logging
-# and attaching users
+require 'wisper'
+
 class Chat
+
+  include Wisper::Publisher
 
   def initialize(server)
     @server = server
     @log = []
   end
 
-  def new_message(player_name:, message:)
-    message = "#{player_name}: #{message}"
+  def new_message(message)
     log_message(message)
-    update_players
+
+    publish(:chat_updated, recent_messages)
+  end
+
+  def subscribe_player(player)
+    self.subscribe(player)
   end
 
   private
 
-  # FIXME Save off @log to prevent overflow
   def log_message(message)
     @log << message
-  end
-
-  def update_players
-    players.each { |player| print_chat(player) }
-  end
-
-  def players
-    @server.players
-  end
-
-  def print_chat(player)
-    player.client.printf "\u001B[2J"
-    recent_messages.each do |chat_line|
-      player.client.puts chat_line
-    end
   end
 
   def recent_messages

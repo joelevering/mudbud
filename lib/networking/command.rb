@@ -15,4 +15,8 @@ class Command
   def message
     @input_array[1..-1]
   end
+
+  def message_string
+    message.join(" ")
+  end
 end

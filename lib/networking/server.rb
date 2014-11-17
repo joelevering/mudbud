@@ -1,6 +1,7 @@
 require 'socket'
 require 'thread'
 require_relative 'player_client'
+require_relative 'chat'
 require_relative 'command_router'
 
 PORT = 2000
@@ -17,20 +18,17 @@ class Server
     ip = IPSocket.getaddress(Socket.gethostname)
     puts ip
     @server = TCPServer.open(ip, 19191)
-    @command_router = CommandRouter.new(self)
+    @chat = Chat.new(self)
+    @command_router = CommandRouter.new(server: self, chat: @chat)
     @players = []
   end
 
   def run_server
     loop do
       Thread.start(@server.accept) do |client|
-        player= PlayerClient.new(server: self, client: client)
-        @players << player
+        player = PlayerClient.new(server: self, client: client)
 
-        player.get_name
-
-        player.clear_screen
-        client.puts "PLAYERS ONLINE: #{player_names}"
+        login(player)
 
         take_input_and_route(player)
 
@@ -39,12 +37,18 @@ class Server
     end
   end
 
-  def command_not_found(command)
-    command.player.clear_screen
-    command.player.client.puts "Sorry, I don't understand command '#{command.input}'"
-  end
-
   private
+
+  def login(player)
+    @players << player
+
+    player.get_name
+
+    player.clear_screen
+    player.client.puts "PLAYERS ONLINE: #{player_names}"
+
+    @chat.subscribe_player(player)
+  end
 
   def player_names
     @players.map { |player| player.name }.join(", ")
@@ -56,7 +60,7 @@ class Server
   end
 
   def logout(player)
-    player.client.puts "CLOSING NOW K BAI"
+    player.client.puts "'Til next time...'"
     player.client.close
     @players.delete(player)
   end
